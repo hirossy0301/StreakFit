@@ -8,6 +8,8 @@ type Props = {
   isFirstToday: boolean;
   streak: number;
   xpGained: number;
+  boosted: boolean;
+  chestEarned: boolean;
   todayCount: number;
   onDismiss: () => void;
 };
@@ -33,6 +35,8 @@ export function CelebrationOverlay({
   isFirstToday,
   streak,
   xpGained,
+  boosted,
+  chestEarned,
   todayCount,
   onDismiss,
 }: Props) {
@@ -91,8 +95,11 @@ export function CelebrationOverlay({
           </>
         )}
         <View style={styles.xp}>
-          <Text style={styles.xpText}>+{xpGained} XP</Text>
+          <Text style={styles.xpText}>
+            +{xpGained} XP{boosted ? ' ⚡' : ''}
+          </Text>
         </View>
+        {chestEarned ? <Text style={styles.chest}>🎁 宝箱を獲得!</Text> : null}
         <Text style={styles.tap}>タップして閉じる</Text>
       </Animated.View>
     </Pressable>
@@ -139,5 +146,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   xpText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  chest: { color: colors.primary, fontSize: 16, fontWeight: '700', marginTop: spacing.sm },
   tap: { color: colors.textMuted, fontSize: 12, marginTop: spacing.md },
 });

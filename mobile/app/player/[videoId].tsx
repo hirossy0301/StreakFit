@@ -81,6 +81,8 @@ export default function PlayerScreen() {
         isFirstToday={result?.isFirstToday ?? false}
         streak={streak}
         xpGained={result?.xpGained ?? 0}
+        boosted={result?.boosted ?? false}
+        chestEarned={result?.chestEarned ?? false}
         todayCount={result?.todayCount ?? 0}
         onDismiss={() => {
           const wasFirst = result?.isFirstToday ?? false;
