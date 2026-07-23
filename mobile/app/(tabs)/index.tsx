@@ -84,7 +84,7 @@ export default function HomeScreen() {
             onPress={() => router.push(`/player/${todaysVideo.videoId}`)}
           >
             <Text style={styles.ctaText}>
-              {isCompletedToday ? 'もう一度再生する' : '▶ 再生して今日を達成する'}
+              {isCompletedToday ? '▶ もう1本トレーニングする(+XP・宝箱)' : '▶ 再生して今日を達成する'}
             </Text>
           </Pressable>
         </>
