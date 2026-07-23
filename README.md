@@ -17,6 +17,25 @@ Duolingo の継続メカニクスを応用した、**筋トレ習慣化アプリ
 > 「今日、動画を1本再生する」だけでいい。
 > でも、その1本を途切れさせたくなくなる。
 
+## リポジトリ構成
+
+```
+docs/        企画・設計・リサーチ
+mobile/      Expo (React Native/TS) アプリ MVP 雛形 → mobile/README.md
+supabase/    DB マイグレーション(RLS 込み)
+```
+
+## 開発(MVP 雛形)
+
+```bash
+cd mobile
+npm install && npx expo install
+npx expo start
+```
+
+現状の雛形はローカル完結で動作(ホーム/ライブラリ/動画追加/再生→ストリーク/通知)。
+詳細は [mobile/README.md](./mobile/README.md)。
+
 ## ステータス
 
-企画・設計フェーズ(実装前)
+設計完了 → MVP 雛形を実装中。次段階は Supabase 認証・クラウド同期。
