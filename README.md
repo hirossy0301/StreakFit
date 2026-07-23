@@ -8,6 +8,8 @@ Duolingo の継続メカニクスを応用した、**筋トレ習慣化アプリ
 ## ドキュメント
 
 - [機能仕様書](./docs/feature-spec.md) — MVP を含む全機能の設計
+- [技術スタック設計](./docs/tech-stack.md) — フレームワーク・バックエンド・インフラ選定
+- [ディープリサーチ](./docs/market-research.md) — 競合・行動科学・YouTube規約・収益化
 - [Duolingo リサーチ](./docs/duolingo-research.md) — 継続メカニクスの調査結果
 
 ## コンセプト
