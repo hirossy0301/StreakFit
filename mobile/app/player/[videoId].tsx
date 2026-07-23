@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { useStreakStore } from '@/features/streak/streakStore';
@@ -17,6 +17,8 @@ export default function PlayerScreen() {
   const router = useRouter();
   const [playing, setPlaying] = useState(true);
   const [result, setResult] = useState<WorkoutResult | null>(null);
+  // この再生で「動画終了」による自動カウントを済ませたか(手動完了との二重防止)。
+  const autoCountedRef = useRef(false);
 
   const completeToday = useStreakStore((s) => s.completeToday);
   const recordWorkout = useXpStore((s) => s.recordWorkout);
@@ -25,6 +27,7 @@ export default function PlayerScreen() {
   const toNextChest = useXpStore((s) => s.workoutsToNextChest());
 
   const runCompletion = useCallback(() => {
+    autoCountedRef.current = true;
     const r = recordWorkout();
     if (r.isFirstToday) {
       // その日の1本目 → ストリーク加算 + 強めの祝福。
@@ -45,7 +48,8 @@ export default function PlayerScreen() {
     (state: string) => {
       if (state === 'ended') {
         setPlaying(false);
-        runCompletion();
+        // 手動で完了済みなら二重カウントしない。
+        if (!autoCountedRef.current) runCompletion();
       }
     },
     [runCompletion],
@@ -74,6 +78,9 @@ export default function PlayerScreen() {
         </Text>
       </Pressable>
 
+      <Text style={styles.note}>
+        動画を最後まで見なくても、終わったら「完了」でOK
+      </Text>
       <Text style={styles.note}>
         今日 {todayCount} 本 ・ 次の宝箱まであと {toNextChest} 本 🎁
       </Text>
