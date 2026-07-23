@@ -21,6 +21,8 @@ export default function PlayerScreen() {
   const completeToday = useStreakStore((s) => s.completeToday);
   const recordWorkout = useXpStore((s) => s.recordWorkout);
   const streak = useStreakStore((s) => s.current);
+  const todayCount = useXpStore((s) => s.countToday());
+  const toNextChest = useXpStore((s) => s.workoutsToNextChest());
 
   const runCompletion = useCallback(() => {
     const r = recordWorkout();
@@ -62,7 +64,7 @@ export default function PlayerScreen() {
         />
       </View>
 
-      {/* 1日1回のストリークは達成済みでも、追加のトレーニングで XP は貯められる。 */}
+      {/* 1日1回のストリークは達成済みでも、追加のトレーニングで XP と宝箱は貯められる。 */}
       <Pressable
         style={({ pressed }) => [styles.cta, pressed && { opacity: 0.9 }]}
         onPress={runCompletion}
@@ -72,9 +74,13 @@ export default function PlayerScreen() {
         </Text>
       </Pressable>
 
-      {doneToday ? (
-        <Text style={styles.note}>今日のストリークは達成済み。追加分は XP が貯まります。</Text>
-      ) : null}
+      <Text style={styles.note}>
+        今日 {todayCount} 本 ・ 次の宝箱まであと {toNextChest} 本 🎁
+      </Text>
+
+      <Pressable style={styles.homeBtn} onPress={() => router.back()}>
+        <Text style={styles.homeText}>ホームに戻る</Text>
+      </Pressable>
 
       <CelebrationOverlay
         visible={result !== null}
@@ -85,10 +91,8 @@ export default function PlayerScreen() {
         chestEarned={result?.chestEarned ?? false}
         todayCount={result?.todayCount ?? 0}
         onDismiss={() => {
-          const wasFirst = result?.isFirstToday ?? false;
+          // 閉じてもプレーヤーに留まり、続けて「もう1本」できるようにする。
           setResult(null);
-          // 1本目達成の余韻の後はホームへ。追加分はそのまま続けられるよう留まる。
-          if (wasFirst) router.back();
         }}
       />
     </View>
@@ -110,4 +114,6 @@ const styles = StyleSheet.create({
   },
   ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   note: { color: colors.textMuted, fontSize: 13, textAlign: 'center' },
+  homeBtn: { paddingVertical: spacing.sm, alignItems: 'center' },
+  homeText: { color: colors.textMuted, fontSize: 14, fontWeight: '600' },
 });
