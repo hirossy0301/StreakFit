@@ -2,6 +2,7 @@ import { Link, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStreakStore } from '@/features/streak/streakStore';
+import { useXpStore } from '@/features/streak/xpStore';
 import { useVideosStore } from '@/features/videos/videosStore';
 import { VideoCard } from '@/shared/components/VideoCard';
 import { StreakBadge } from '@/shared/components/StreakBadge';
@@ -26,12 +27,31 @@ export default function HomeScreen() {
   const videoCount = useVideosStore((s) => s.videos.length);
   const todaysVideo = pickTodaysVideo(daySeed());
 
+  const totalXp = useXpStore((s) => s.totalXp);
+  const todayCount = useXpStore((s) => s.countToday());
+  const todayXp = useXpStore((s) => s.xpToday());
+
   return (
     <ScrollView
       style={styles.screen}
       contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md }]}
     >
       <StreakBadge current={current} completedToday={isCompletedToday} />
+
+      <View style={styles.statRow}>
+        <View style={styles.stat}>
+          <Text style={styles.statValue}>{todayCount}</Text>
+          <Text style={styles.statLabel}>今日の本数</Text>
+        </View>
+        <View style={styles.stat}>
+          <Text style={styles.statValue}>+{todayXp}</Text>
+          <Text style={styles.statLabel}>今日の XP</Text>
+        </View>
+        <View style={styles.stat}>
+          <Text style={styles.statValue}>{totalXp}</Text>
+          <Text style={styles.statLabel}>累計 XP</Text>
+        </View>
+      </View>
 
       <Text style={styles.sectionTitle}>今日の1本</Text>
 
@@ -72,6 +92,18 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, gap: spacing.lg, paddingBottom: spacing.xl },
+  statRow: { flexDirection: 'row', gap: spacing.sm },
+  stat: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  statValue: { color: colors.text, fontSize: 22, fontWeight: '800' },
+  statLabel: { color: colors.textMuted, fontSize: 12, marginTop: 2 },
   sectionTitle: { color: colors.text, fontSize: 20, fontWeight: '700' },
   cta: {
     backgroundColor: colors.primary,

@@ -4,7 +4,11 @@ import { colors, radius, spacing } from '@/shared/theme';
 
 type Props = {
   visible: boolean;
+  /** その日の1本目(ストリーク加算あり)か、2本目以降の上乗せか */
+  isFirstToday: boolean;
   streak: number;
+  xpGained: number;
+  todayCount: number;
   onDismiss: () => void;
 };
 
@@ -24,7 +28,14 @@ function milestoneMessage(streak: number): string | null {
 
 // 達成時のご褒美演出(Hookモデルの「変動報酬」)。
 // 追加ライブラリ不要で、React Native 標準の Animated を使う。
-export function CelebrationOverlay({ visible, streak, onDismiss }: Props) {
+export function CelebrationOverlay({
+  visible,
+  isFirstToday,
+  streak,
+  xpGained,
+  todayCount,
+  onDismiss,
+}: Props) {
   const scale = useRef(new Animated.Value(0)).current;
   const flameY = useRef(new Animated.Value(0)).current;
   const milestone = milestoneMessage(streak);
@@ -42,7 +53,7 @@ export function CelebrationOverlay({ visible, streak, onDismiss }: Props) {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [visible, streak, scale, flameY]);
+  }, [visible, streak, xpGained, scale, flameY]);
 
   if (!visible) return null;
 
@@ -51,20 +62,36 @@ export function CelebrationOverlay({ visible, streak, onDismiss }: Props) {
   return (
     <Pressable style={styles.backdrop} onPress={onDismiss}>
       <Animated.View style={[styles.card, { transform: [{ scale }] }]}>
-        <Animated.Text style={[styles.flame, { transform: [{ translateY: flameTranslate }] }]}>
-          🔥
-        </Animated.Text>
-        <Text style={styles.count}>{streak}</Text>
-        <Text style={styles.days}>日連続!</Text>
-        {milestone ? (
-          <View style={styles.milestone}>
-            <Text style={styles.milestoneText}>{milestone}</Text>
-          </View>
+        {isFirstToday ? (
+          <>
+            <Animated.Text
+              style={[styles.flame, { transform: [{ translateY: flameTranslate }] }]}
+            >
+              🔥
+            </Animated.Text>
+            <Text style={styles.count}>{streak}</Text>
+            <Text style={styles.days}>日連続!</Text>
+            {milestone ? (
+              <View style={styles.milestone}>
+                <Text style={styles.milestoneText}>{milestone}</Text>
+              </View>
+            ) : (
+              <Text style={styles.sub}>今日も達成。明日も続けよう。</Text>
+            )}
+          </>
         ) : (
-          <Text style={styles.sub}>今日も達成。明日も続けよう。</Text>
+          <>
+            <Animated.Text
+              style={[styles.flame, { transform: [{ translateY: flameTranslate }] }]}
+            >
+              💪
+            </Animated.Text>
+            <Text style={styles.days}>ナイス、もう1本!</Text>
+            <Text style={styles.sub}>今日 {todayCount} 本目。この調子!</Text>
+          </>
         )}
         <View style={styles.xp}>
-          <Text style={styles.xpText}>+10 XP</Text>
+          <Text style={styles.xpText}>+{xpGained} XP</Text>
         </View>
         <Text style={styles.tap}>タップして閉じる</Text>
       </Animated.View>
