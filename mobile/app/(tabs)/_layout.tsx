@@ -26,6 +26,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="path"
+        options={{
+          title: 'パス',
+          tabBarIcon: ({ color }) => <TabIcon icon="🗺️" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="library"
         options={{
           title: 'ライブラリ',

@@ -32,6 +32,10 @@ export default function RootLayout() {
             name="add"
             options={{ presentation: 'modal', title: '動画を追加' }}
           />
+          <Stack.Screen
+            name="chest"
+            options={{ presentation: 'modal', title: '宝箱' }}
+          />
           <Stack.Screen name="player/[videoId]" options={{ title: 'トレーニング' }} />
         </Stack>
       </SafeAreaProvider>

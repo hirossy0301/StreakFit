@@ -6,6 +6,7 @@ import { useXpStore } from '@/features/streak/xpStore';
 import { useVideosStore } from '@/features/videos/videosStore';
 import { VideoCard } from '@/shared/components/VideoCard';
 import { StreakBadge } from '@/shared/components/StreakBadge';
+import { BoostBanner } from '@/shared/components/BoostBanner';
 import { colors, radius, spacing } from '@/shared/theme';
 
 // 「今日の1本」は登録順ローテーション。日付をシードにして毎日変える。
@@ -30,6 +31,8 @@ export default function HomeScreen() {
   const totalXp = useXpStore((s) => s.totalXp);
   const todayCount = useXpStore((s) => s.countToday());
   const todayXp = useXpStore((s) => s.xpToday());
+  const chestsAvailable = useXpStore((s) => s.chestsAvailable());
+  const toNextChest = useXpStore((s) => s.workoutsToNextChest());
 
   return (
     <ScrollView
@@ -37,6 +40,20 @@ export default function HomeScreen() {
       contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md }]}
     >
       <StreakBadge current={current} completedToday={isCompletedToday} />
+
+      <BoostBanner />
+
+      {chestsAvailable > 0 ? (
+        <Pressable
+          style={({ pressed }) => [styles.chestCta, pressed && { opacity: 0.9 }]}
+          onPress={() => router.push('/chest')}
+        >
+          <Text style={styles.chestCtaText}>🎁 開けられる宝箱が {chestsAvailable} 個!</Text>
+          <Text style={styles.chestCtaSub}>タップして開ける</Text>
+        </Pressable>
+      ) : (
+        <Text style={styles.chestHint}>次の宝箱まであと {toNextChest} 本 🎁</Text>
+      )}
 
       <View style={styles.statRow}>
         <View style={styles.stat}>
@@ -92,6 +109,17 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, gap: spacing.lg, paddingBottom: spacing.xl },
+  chestCta: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  chestCtaText: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  chestCtaSub: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
+  chestHint: { color: colors.textMuted, fontSize: 13, textAlign: 'center' },
   statRow: { flexDirection: 'row', gap: spacing.sm },
   stat: {
     flex: 1,

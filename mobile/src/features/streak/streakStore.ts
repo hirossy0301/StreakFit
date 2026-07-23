@@ -31,6 +31,8 @@ type StreakState = {
   completeToday: () => void;
   /** 日付跨ぎ時にフリーズを消費してストリークを守る(未達で1日空いた場合) */
   reconcile: () => void;
+  /** ストリークフリーズを増やす(宝箱報酬など) */
+  addFreeze: (n: number) => void;
 };
 
 export const useStreakStore = create<StreakState>()(
@@ -72,6 +74,8 @@ export const useStreakStore = create<StreakState>()(
         }
         void current;
       },
+
+      addFreeze: (n) => set({ freezeCount: get().freezeCount + n }),
     }),
     {
       name: 'streakfit-streak',
