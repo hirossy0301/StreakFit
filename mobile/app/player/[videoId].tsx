@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { useStreakStore } from '@/features/streak/streakStore';
+import { useXpStore, type WorkoutResult } from '@/features/streak/xpStore';
 import { CelebrationOverlay } from '@/shared/components/CelebrationOverlay';
 import { colors, radius, spacing } from '@/shared/theme';
 
@@ -15,26 +16,28 @@ export default function PlayerScreen() {
   const { videoId } = useLocalSearchParams<{ videoId: string }>();
   const router = useRouter();
   const [playing, setPlaying] = useState(true);
-  const [celebrate, setCelebrate] = useState(false);
+  const [result, setResult] = useState<WorkoutResult | null>(null);
 
   const completeToday = useStreakStore((s) => s.completeToday);
-  const isCompletedToday = useStreakStore((s) => s.isCompletedToday());
+  const recordWorkout = useXpStore((s) => s.recordWorkout);
+  const streak = useStreakStore((s) => s.current);
 
   const runCompletion = useCallback(() => {
-    const alreadyDone = useStreakStore.getState().isCompletedToday();
-    completeToday();
-    const streak = useStreakStore.getState().current;
-    // すでに今日達成済みなら演出は出さない(二重演出防止)。
-    if (alreadyDone) return;
-    // 達成の触覚フィードバック(変動報酬の身体的な手応え)。
-    if (MILESTONES.has(streak)) {
+    const r = recordWorkout();
+    if (r.isFirstToday) {
+      // その日の1本目 → ストリーク加算 + 強めの祝福。
+      completeToday();
+      const newStreak = useStreakStore.getState().current;
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy), 120);
+      if (MILESTONES.has(newStreak)) {
+        setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy), 120);
+      }
     } else {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // 2本目以降 → ストリークは据え置き、XP は上乗せ + 軽い手応え。
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-    setCelebrate(true);
-  }, [completeToday]);
+    setResult(r);
+  }, [completeToday, recordWorkout]);
 
   const onStateChange = useCallback(
     (state: string) => {
@@ -45,6 +48,8 @@ export default function PlayerScreen() {
     },
     [runCompletion],
   );
+
+  const doneToday = useStreakStore.getState().isCompletedToday();
 
   return (
     <View style={styles.screen}>
@@ -57,25 +62,31 @@ export default function PlayerScreen() {
         />
       </View>
 
-      {isCompletedToday ? (
-        <View style={styles.doneBanner}>
-          <Text style={styles.doneText}>🔥 今日のトレーニング達成!ストリーク継続中</Text>
-        </View>
-      ) : (
-        <Pressable
-          style={({ pressed }) => [styles.cta, pressed && { opacity: 0.9 }]}
-          onPress={runCompletion}
-        >
-          <Text style={styles.ctaText}>✓ 完了にする</Text>
-        </Pressable>
-      )}
+      {/* 1日1回のストリークは達成済みでも、追加のトレーニングで XP は貯められる。 */}
+      <Pressable
+        style={({ pressed }) => [styles.cta, pressed && { opacity: 0.9 }]}
+        onPress={runCompletion}
+      >
+        <Text style={styles.ctaText}>
+          {doneToday ? '💪 もう1本 完了する(+XP)' : '✓ 完了にする'}
+        </Text>
+      </Pressable>
+
+      {doneToday ? (
+        <Text style={styles.note}>今日のストリークは達成済み。追加分は XP が貯まります。</Text>
+      ) : null}
 
       <CelebrationOverlay
-        visible={celebrate}
-        streak={useStreakStore.getState().current}
+        visible={result !== null}
+        isFirstToday={result?.isFirstToday ?? false}
+        streak={streak}
+        xpGained={result?.xpGained ?? 0}
+        todayCount={result?.todayCount ?? 0}
         onDismiss={() => {
-          setCelebrate(false);
-          router.back();
+          const wasFirst = result?.isFirstToday ?? false;
+          setResult(null);
+          // 1本目達成の余韻の後はホームへ。追加分はそのまま続けられるよう留まる。
+          if (wasFirst) router.back();
         }}
       />
     </View>
@@ -83,7 +94,7 @@ export default function PlayerScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg, padding: spacing.md, gap: spacing.lg },
+  screen: { flex: 1, backgroundColor: colors.bg, padding: spacing.md, gap: spacing.md },
   playerWrap: {
     borderRadius: radius.md,
     overflow: 'hidden',
@@ -96,13 +107,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  doneBanner: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.success,
-  },
-  doneText: { color: colors.text, fontSize: 16, fontWeight: '600' },
+  note: { color: colors.textMuted, fontSize: 13, textAlign: 'center' },
 });
