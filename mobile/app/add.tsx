@@ -1,3 +1,4 @@
+import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -18,6 +19,14 @@ export default function AddVideoScreen() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function onPaste() {
+    const text = await Clipboard.getStringAsync();
+    if (text) {
+      setUrl(text.trim());
+      setError(null);
+    }
+  }
 
   async function onSave() {
     setError(null);
@@ -40,7 +49,12 @@ export default function AddVideoScreen() {
 
   return (
     <View style={styles.screen}>
-      <Text style={styles.label}>YouTube の URL</Text>
+      <View style={styles.labelRow}>
+        <Text style={styles.label}>YouTube の URL</Text>
+        <Pressable onPress={onPaste} hitSlop={8}>
+          <Text style={styles.paste}>📋 貼り付け</Text>
+        </Pressable>
+      </View>
       <TextInput
         style={styles.input}
         placeholder="https://www.youtube.com/watch?v=..."
@@ -74,7 +88,9 @@ export default function AddVideoScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg, padding: spacing.md, gap: spacing.md },
+  labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   label: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  paste: { color: colors.primary, fontSize: 15, fontWeight: '600' },
   input: {
     backgroundColor: colors.surface,
     borderRadius: radius.md,
