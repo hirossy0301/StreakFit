@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { useKeepAwake } from 'expo-keep-awake';
 import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
@@ -13,6 +14,9 @@ const MILESTONES = new Set([3, 7, 14, 30, 50, 100, 365]);
 
 // 公式 IFrame プレーヤーで前面再生。DL/バックグラウンド再生はしない(規約準拠)。
 export default function PlayerScreen() {
+  // トレーニング中は画面を消さない(スリープ/ロックで動画が止まるのを防ぐ)。
+  useKeepAwake();
+
   const { videoId } = useLocalSearchParams<{ videoId: string }>();
   const router = useRouter();
   const [playing, setPlaying] = useState(true);
